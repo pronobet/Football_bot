@@ -69,10 +69,11 @@ class Training:
 class Payment:
     """ Class: Payment"""
 
-    def __init__(self, date, amount, user_id):
+    def __init__(self, date, amount, user_id, username):
         self.date = date
         self.amount = amount
         self.user_id = user_id
+        self.username = username
         self.status = 'new'
 
     def __str__(self):

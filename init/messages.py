@@ -1,5 +1,6 @@
 from datetime import datetime
 from init.class_user import payment_statuses, admin_list
+from telebot import types
 
 
 def start_message(message) -> str:
@@ -18,12 +19,12 @@ def function_list() -> str:
             f'/pay - Пополнить баланс или оплатить тренировку\n'
             # f'/game_history - История Ваших тренировок\n'
             f'/training - Записать на тренировку\n'
-            f'/training_info - Информация о ближайшей тренировке\n'
+            f'/training_info - Информация о ближайшей тренировке\n\n\n'
             
             
             f'Доступно только админу:\n'
             f'/new_training - Создать новую тренировку\n'
-            # f'/payment_history - История Ваших пополнений\n'
+            f'/confirm_payments - ПОдтвердить новые платежи\n'
     )
 
 
@@ -63,11 +64,11 @@ def new_training_price_msg() -> str:
 
 
 def new_training_notice(trainig):
-    return f"Новая тренировка {trainig.date} в {trainig.time}\nЖдать тебя ?"
+    return f"Новая тренировка {trainig.date} в {trainig.time}\nЖдать тебя ?\nДля ответа напиши + или -"
 
 
 def training_notice(training):
-    return f"Новая тренировка {training[3]} в {training[4]}\nЖдать тебя ?"
+    return f"Новая тренировка {training[3]} в {training[4]}\nЖдать тебя ?\nДля ответа напиши + или -"
 
 
 def bad_voice_to_trainig():
@@ -91,3 +92,24 @@ def training_info(training_info, users_list):
     for user in users_list:
         output_str += f"{user}\n"
     return output_str
+
+
+def confirm_payments_msg():
+    return f"Список новых плаежей на пополнения кошелька пользователя: "
+
+
+def payment_confirm_keyboard(payment) -> types.InlineKeyboardMarkup:
+    """ CONFIRM PAYMENT KEYBOARD """
+    print(payment)
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text='Потвердить', callback_data=f'confirmed, {payment[0]}, {payment[3]}'))
+    keyboard.add(types.InlineKeyboardButton(text='Отклонить', callback_data=f'rejected, {payment[0]}, {payment[3]}'))
+    return keyboard
+
+
+def payment_info_confirm(payment_info):
+    return f"Новый платеж!\nСумма: {payment_info[3]}\nДата: {payment_info[4]}\nОт: @{payment_info[1]} "
+
+
+def no_new_payments_msg():
+    return f'Нет новых платежей'

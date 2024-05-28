@@ -1,5 +1,5 @@
 from init.class_user import BotUser, Payment, Training
-from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from init.messages import *
 from datetime import datetime
 from decouple import config
@@ -51,6 +51,9 @@ def start(message: Message) -> None:
     elif message.text == '/new_training' and user.group == 'admin':
         bot.send_message(user_chat_id, new_training_msg())
         bot.register_next_step_handler(message, new_training_date)
+    elif message.text == '/confirm_payments' and user.group == 'admin':
+        bot.send_message(user_chat_id, confirm_payments_msg())
+        confirm_payments(user_chat_id)
     else:
         bot.send_message(user_chat_id, function_list())
 
@@ -62,7 +65,7 @@ def enter_amount(message: Message) -> None:
     today_date = str(datetime.now().date().strftime('%d.%m.%Y'))
 
     try:
-        new_payment = Payment(today_date, float(pay_amount), user_id)
+        new_payment = Payment(today_date, float(pay_amount), user_id, user.username)
         create_payment(new_payment)
         bot.send_message(message.chat.id, success_payment(new_payment))
     except Exception as error:
@@ -176,10 +179,40 @@ def url_for_pay() -> str:
     return 'https://www.tinkoff.ru/rm/agalakov.dmitriy18/CaD269995'
 
 
+def confirm_payments(user_id):
+    new_payments = get_new_payments()
+    if new_payments and len(new_payments) > 0:
+        payment = new_payments[0]
+        bot.send_message(user_id, text=payment_info_confirm(payment), reply_markup=payment_confirm_keyboard(payment))
+    else:
+        bot.send_message(user_id, no_new_payments_msg())
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_worker(call: CallbackQuery) -> None:
+    """ UPDATE PAYMENT STATUS FOR USER IN DB """
+
+    user_id = call.message.chat.id
+    user = users_dict[user_id]
+    new_payment_status = call.data.split(', ')
+    print(new_payment_status)
+
+    if new_payment_status[0] == 'confirmed':
+        update_payment_in_db(new_payment_status)
+    elif new_payment_status[0] == 'rejected':
+        update_payment_in_db(new_payment_status)
+    else:
+        bot.send_message(user_id, 'Введен неверный вариант ответа...\nПопробуйте снова')
+        bot.send_message(user_id, confirm_payments_msg())
+        confirm_payments(user_id)
+
+
+
 def redirect_to_start(message):
     print(message.text)
     if message.text.startswith('/'):
         bot.register_next_step_handler(message, start)
+
 
 if __name__ == '__main__':
     logger.add('logger.log', level='DEBUG', format='{time} {level} {message}', encoding='utf-8')

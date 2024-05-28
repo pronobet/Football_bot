@@ -123,7 +123,6 @@ def get_users_on_training(users_id_list):
     return users_username
 
 
-
 def payment_history(user_id):
     """ GET ALL USER'S PAYMENTS IN DB """
 
@@ -141,6 +140,39 @@ def payment_history(user_id):
     return False
 
 
+def update_payment_in_db(payment):
+    """ UPDATE PAYMENT STATUS IN DB"""
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+        cursor.execute(f"UPDATE payments SET status = ? WHERE user_id = ? AND status = ? AND amount = ?", (payment[0], int(payment[1]), 'new', float(payment[2])))
+        db.commit()
+        if payment[0] == 'confirmed':
+            cursor.execute(f"SELECT * FROM users WHERE user_id={int(payment[1])}")
+            response = cursor.fetchall()[0]
+            user_balance = float(response[4]) + float(payment[2])
+            cursor.execute(f"UPDATE users SET balance = ? WHERE user_id = ?", (user_balance, response[0]))
+            db.commit()
+        cursor.close()
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with update payment status in DB: {error}')
+    return 'error'
+
+
+def get_new_payments():
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+        cursor.execute(f"SELECT * FROM payments WHERE status='new'")
+        response = cursor.fetchall()
+        cursor.close()
+        if response:
+            return response
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with checking user in DB: {error}')
+    return None
+
+
 def create_payment(payment):
     """CREATE NEW PAYMENT """
 
@@ -149,7 +181,7 @@ def create_payment(payment):
     try:
         db = sqlite3.connect(db_name)
         cursor = db.cursor()
-        cursor.execute(f"INSERT INTO payments VALUES(?, ?, ?, ?)",(payment.user_id, payment.status, payment.amount, payment.date))
+        cursor.execute(f"INSERT INTO payments VALUES(?, ?, ?, ?, ?)",(payment.user_id, payment.username, payment.status, payment.amount, payment.date))
         db.commit()
         cursor.close()
         logger.info('SUCCESS | NEW PAYMENTS WAS SAVED IN DB.')
@@ -248,7 +280,7 @@ def create_payment_table():
     try:
         payment_table = sqlite3.connect(db_name)
         cursor = payment_table.cursor()
-        cursor.execute("""CREATE TABLE IF NOT EXISTS payments(user_id INTEGER, status TEXT, amount REAL, date TEXT);""")
+        cursor.execute("""CREATE TABLE IF NOT EXISTS payments(user_id INTEGER, username TEXT, status TEXT, amount REAL, date TEXT);""")
         payment_table.commit()
         cursor.close()
     except sqlite3.Error as error:
