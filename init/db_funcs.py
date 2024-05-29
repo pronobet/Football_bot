@@ -86,7 +86,7 @@ def add_user_to_training(user):
 
 
 def get_future_training():
-    """ GET FUTURE TRAINING """
+    """ GET FUTURE TRAINING IN DB"""
 
     try:
         db = sqlite3.connect(db_name)
@@ -98,7 +98,7 @@ def get_future_training():
         cursor.close()
         return response
     except sqlite3.Error as error:
-        logger.error(f'ERROR | Error with checking user in DB: {error}')
+        logger.error(f'ERROR | Error with get training in DB with status = "new": {error}')
     return None
 
 
@@ -114,12 +114,15 @@ def get_users_on_training(users_id_list):
         for user_id in users_list:
             if user_id:
                 cursor.execute(f"SELECT * FROM users WHERE user_id={int(user_id)}")
-                response = cursor.fetchall()[0][3]
+                response = cursor.fetchall()[0]
                 db.commit()
-                users_username.append(f"@{response}")
+                if response[3] != 'None':
+                    users_username.append(f"@{response[0]}")
+                else:
+                    users_username.append(f"{response[1]} {response[2]}")
         cursor.close()
     except sqlite3.Error as error:
-        logger.error(f'ERROR | Error with checking user in DB: {error}')
+        logger.error(f'ERROR | Error with get users on training in DB: {error}')
     return users_username
 
 
@@ -181,7 +184,7 @@ def create_payment(payment):
     try:
         db = sqlite3.connect(db_name)
         cursor = db.cursor()
-        cursor.execute(f"INSERT INTO payments VALUES(?, ?, ?, ?, ?)",(payment.user_id, payment.username, payment.status, payment.amount, payment.date))
+        cursor.execute(f"INSERT INTO payments VALUES(?, ?, ?, ?, ?)", (payment.user_id, payment.username, payment.status, payment.amount, payment.date))
         db.commit()
         cursor.close()
         logger.info('SUCCESS | NEW PAYMENTS WAS SAVED IN DB.')

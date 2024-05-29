@@ -22,6 +22,7 @@ user_group = {
 
 admin_list = [2010916504, 664588645]
 
+
 class BotUser:
     """ Class: Telegram bot's user """
 
@@ -33,9 +34,6 @@ class BotUser:
         self.balance = float()
         self.training_history = str()
         self.group = 'admin' if chat.id in admin_list else 'user'
-
-    def add_training(self, training):
-        self.training_history.append(training)
 
     def show_balance(self):
         return (f"Ваш баланс:\n"
