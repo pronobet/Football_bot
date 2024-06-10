@@ -6,14 +6,13 @@ from init.db_funcs import *
 from datetime import datetime
 from decouple import config
 from loguru import logger
-from typing import Dict
 import telebot
 
 
 bot = telebot.TeleBot(config('football_bot'))
 payment_link = config('payment_link')
 admin_list = [2010916504, 664588645]
-users_dict: Dict[int, BotUser] = dict()
+users_dict = dict()
 
 
 @bot.message_handler(content_types=['text'])
