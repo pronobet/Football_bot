@@ -19,6 +19,7 @@ users_dict: Dict[int, BotUser] = dict()
 @bot.message_handler(content_types=['text'])
 def start(message: Message) -> None:
     """ CALLING AND PROCESSING BASIC BOT COMMANDS """
+
     global users_dict
 
     user_chat_id = message.chat.id
