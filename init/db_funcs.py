@@ -34,22 +34,6 @@ def create_payment(payment):
         logger.error(f'ERROR | Error with creating new payment({payment}): {error}')
 
 
-def payment_history(user_id):
-    """ GET ALL USER'S PAYMENTS IN DB """
-
-    try:
-        db = sqlite3.connect(db_name)
-        cursor = db.cursor()
-        cursor.execute(f"SELECT * FROM payments WHERE user_id={user_id}")
-        response = cursor.fetchall()
-        cursor.close()
-        if response:
-            return response
-    except sqlite3.Error as error:
-        logger.error(f'ERROR | Error with checking user in DB: {error}')
-    return False
-
-
 def get_new_payments():
     try:
         db = sqlite3.connect(db_name)
@@ -66,21 +50,45 @@ def get_new_payments():
 
 def update_payment_in_db(payment):
     """ UPDATE PAYMENT STATUS IN DB"""
+
     try:
         db = sqlite3.connect(db_name)
         cursor = db.cursor()
-        cursor.execute(f"UPDATE payments SET status = ? WHERE user_id = ? AND status = ? AND amount = ?", (payment[0], int(payment[1]), 'new', float(payment[2])))
+        cursor.execute(
+            f"UPDATE payments SET status = ? WHERE user_id = ? AND status = ? AND amount = ?",
+            (payment[0], int(payment[1]), 'new', float(payment[2]))
+        )
         db.commit()
         if payment[0] == 'confirmed':
             cursor.execute(f"SELECT * FROM users WHERE user_id={int(payment[1])}")
             response = cursor.fetchall()[0]
             user_balance = float(response[4]) + float(payment[2])
-            cursor.execute(f"UPDATE users SET balance = ? WHERE user_id = ?", (user_balance, response[0]))
+            cursor.execute(
+                f"UPDATE users SET balance = ? WHERE user_id = ?",
+                (user_balance, response[0])
+            )
             db.commit()
         cursor.close()
+        return payment[0], payment[1]
     except sqlite3.Error as error:
         logger.error(f'ERROR | Error with update payment status in DB: {error}')
-    return 'error'
+    return 'error', None
+
+
+def payment_history(user_id):
+    """ GET ALL USER'S PAYMENTS IN DB """
+
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+        cursor.execute(f"SELECT * FROM payments WHERE user_id={user_id}")
+        response = cursor.fetchall()
+        cursor.close()
+        if response:
+            return response
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with checking user in DB: {error}')
+    return False
 
 
 # OPERATIONS WITH TRAINING TABLE

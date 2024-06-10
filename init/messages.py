@@ -1,5 +1,6 @@
 from init.class_user import payment_statuses
 from datetime import datetime
+from init.db_funcs import *
 from telebot import types
 
 
@@ -29,7 +30,8 @@ def function_list(user_id) -> str:
     if user_id in ADMINS:
         output_str += (f'\n\n/new_training - Создать новую тренировку\n'
                        f'/confirm_payments - Подтвердить новые платежи\n'
-                       f'/confirm_training - Подтвердить завершение последней тренировки\n')
+                       f'/confirm_training - Подтвердить завершение последней тренировки\n'
+                       f'/active_subscription - Активировать подписку для пользователя')
     return output_str
 
 
@@ -128,20 +130,93 @@ def success_payment(payment) -> str:
     )
 
 
+def confirm_payments_msg() -> str:
+    return f"Список новых платежей на пополнение кошелька:"
+
+
+def no_confirm_payments_msg() -> str:
+    return f"На данный момент неподтвержденных платежей нет."
+
+
+def payment_info_confirm(payment_info) -> str:
+    output_str = f"Новый платеж!\nНа сумму: {payment_info[3]} RUB\nДата платежа: {payment_info[2]}\n"
+
+    if payment_info[1] and payment_info[1] != '':
+        output_str += f"От @{payment_info[1]}\n"
+    else:
+        user = get_info_about_user(payment_info[0])
+        output_str += f"От {user[1]} {user[2]} (#{user[0]})\n"
+
+    payment_status = payment_info[4]
+    output_str += f"Статус платежа: {payment_statuses[payment_status]}"
+    return output_str
+
+
+def payment_success_confirmed(user_id) -> str:
+    user_info = get_info_about_user(user_id)
+    output_str = f"Платеж был успешно подтвержден\n\n"
+
+    if user_info[3] and user_info[3] != "":
+        output_str += f"Баланс пользователя @{user_info[3]}"
+    else:
+        output_str += f"Баланс пользователя {user_info[1]} {user_info[2]}"
+
+    output_str += f" успешно пополнен"
+    return output_str
+
+
+def payment_success_rejected(user_id) -> str:
+    return f"Платеж был отклонен"
+
+
+def payment_success_error() -> str:
+    return f"Произошла ошибка...\n\nПопрообуйте снова"
+
+
+def confirm_training_msg() -> str:
+    return f'Данная команда завершает тренировку со статусом "Новая" и списывает сумму со всех участников тренировки'
+
+
+def confirm_training(training, users_list) -> str:
+    output_str = (
+        f"Тренировка {training[4]} в {training[5]}\n"
+        f"Стоимость тренировки без подписки: {training[3]} RUB\n"
+        f"Стоимость тренировки с подпиской: {training[2]} RUB\n"
+        f"Количество участников в тренировке: {training[6]}\n\n"
+    )
+
+    if training[6] > 0:
+        output_str += "Список участников:\n"
+        for user in users_list:
+            output_str += f"{user}\n"
+
+    output_str += f"\nВы уверены, что хотите завершить тренировку ?"
+    return output_str
+
+
+def back_from_confirm_training() -> str:
+    return (
+        f"Данные об этой тренировке НЕ изменены.\n"
+        f"Используйте другие возможности бота.\n\n"
+        f"Список команд - /help"
+    )
+
+
+def no_confirm_training_msg() -> str:
+    return (
+        f"На данный момент нет тренировки, которую можно завершить.\n"
+        f"Создайте тренировку, а уже после проведения её можно завершить или изменить статус"
+    )
+
+
+def created_soon():
+    return f"Данная функция в разработке\nНо скоро все будет готово !)"
 
 
 
 
 
 
-
-
-
-
-
-
-def check_balance(user) -> str:
-    return f""
 
 
 def payment_history_msg(payments_list):
@@ -150,37 +225,3 @@ def payment_history_msg(payments_list):
     for payment in payments_list:
         output_strig += f"Платеж от {payment[3]}\nСумма платежа: {payment[2]} RUB\nСтатус платежа: {payment_statuses[payment[1]]}\n\n"
     return output_strig
-
-
-def confirm_payments_msg():
-    return f"Список новых плаежей на пополнения кошелька пользователя: "
-
-
-def payment_info_confirm(payment_info):
-    return f"Новый платеж!\nСумма: {payment_info[3]}\nДата: {payment_info[4]}\nОт: @{payment_info[1]} "
-
-
-def no_new_payments_msg():
-    return f'Нет новых платежей'
-
-
-def confirm_training_msg():
-    return f"Данная команда завершает тренировку со статусом 'Новая' и списывает равную сумму со всех участников тренировки"
-
-
-def confirm_training(training):
-    text = f"Тренировка {training[3]} в {training[4]}\nКоличество участников в тренировке: {training[5]}\nСтоимость тренировки: {training[2]} RUB\n\n"
-    text += f"Вы уверены, что хотите завершить тренировку ?"
-    return text
-
-
-def back_from_confirm_training():
-    return f"Данные о тренировке НЕ изменены.\nИспользуйте другие возможности бота."
-
-
-def created_soon():
-    return f"Данная функция в разработке\nНо скоро все будет готово !)"
-
-
-def no_confirm_training_msg():
-    return f"На данный момент нет тренировки, которую можно завершить.\nСоздайте тренировку, а уже после ее проведения можно завершить и изменить статус"

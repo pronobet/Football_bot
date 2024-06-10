@@ -14,9 +14,9 @@ def training_confirm_keyboard() -> types.InlineKeyboardMarkup:
     """ CONFIRM TRAINING KEYBOARD """
 
     keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(types.InlineKeyboardButton(text='Завершить', callback_data=f'complete training'))
-    keyboard.add(types.InlineKeyboardButton(text='Отменить тренировку', callback_data=f'cancel training'))
-    keyboard.add(types.InlineKeyboardButton(text='Назад', callback_data=f'back'))
+    keyboard.add(types.InlineKeyboardButton(text='Завершить', callback_data=f'complete_training'))
+    keyboard.add(types.InlineKeyboardButton(text='Отменить тренировку', callback_data=f'cancel_training'))
+    keyboard.add(types.InlineKeyboardButton(text='Назад', callback_data=f'back_training'))
     return keyboard
 
 
