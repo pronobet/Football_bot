@@ -70,6 +70,8 @@ def start(message: Message) -> None:
     elif message.text == '/new_training' and user.user_id in admin_list:
         bot.send_message(user_chat_id, new_training_msg())
         bot.register_next_step_handler(message, new_training_date)
+    elif message.text == '/active_subscription' and user.user_id in admin_list:
+        bot.send_message(user_chat_id, created_soon())
     else:
         bot.send_message(user_chat_id, function_list(user_chat_id))
 
