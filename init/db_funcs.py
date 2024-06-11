@@ -1,8 +1,33 @@
+from init.class_user import training_statuses
 from loguru import logger
 import sqlite3
 
 
 db_name = 'bot_db.db'
+
+
+# USEFUL FUNCTIONS
+def training_to_dict(training) -> dict:
+    """ CONVERT TrAINING ET FROM DB TO DICT """
+
+    members_list = list()
+    if training[6] > 0:
+        members = training[7].split(', ')
+        members_list = [int(number) for number in members if number != '' and number != ' ']
+
+    training_dict = {
+        'id': training[0],
+        'status': training[1],
+        'status_name': training_statuses[training[1]],
+        'price_for_usual': training[2],
+        'price_for_subscribe': training[3],
+        'date': training[4],
+        'time': training[5],
+        'members_count': training[6],
+        'members_id': members_list,
+    }
+
+    return training_dict
 
 
 # OPERATIONS WITH PAYMENT TABLE
@@ -75,22 +100,6 @@ def update_payment_in_db(payment):
     return 'error', None
 
 
-def payment_history(user_id):
-    """ GET ALL USER'S PAYMENTS IN DB """
-
-    try:
-        db = sqlite3.connect(db_name)
-        cursor = db.cursor()
-        cursor.execute(f"SELECT * FROM payments WHERE user_id={user_id}")
-        response = cursor.fetchall()
-        cursor.close()
-        if response:
-            return response
-    except sqlite3.Error as error:
-        logger.error(f'ERROR | Error with checking user in DB: {error}')
-    return False
-
-
 # OPERATIONS WITH TRAINING TABLE
 def create_trainig_table():
     """ CREATE TRAINING TABLE for BOT """
@@ -161,12 +170,11 @@ def get_future_training():
     try:
         db = sqlite3.connect(db_name)
         cursor = db.cursor()
-
         cursor.execute(f"SELECT * FROM training WHERE status='new'")
-        response = cursor.fetchall()[0]
+        response = cursor.fetchall()
         db.commit()
         cursor.close()
-        return response
+        return response[0] if response and response[0] else None
     except sqlite3.Error as error:
         logger.error(f'ERROR | Error with get training in DB with status = "new": {error}')
     return None
@@ -224,6 +232,49 @@ def get_users_on_training(users_id_list):
     except sqlite3.Error as error:
         logger.error(f'ERROR | Error with get users on training in DB: {error}')
     return users_username
+
+
+def cancel_training(training):
+    """ CANCEL TRAINING """
+
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+        cursor.execute(f"UPDATE training SET status='rejected' WHERE id={training[0]}")
+        response = cursor.fetchall()
+        db.commit()
+        cursor.close()
+        return True
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with cancel training({training}): {error}')
+    return False
+
+
+def complete_training(training):
+    """ COMPLETE TRAINING """
+
+    training_dict = training_to_dict(training)
+
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+
+        for member_id in training_dict['members_id']:
+            user = get_info_about_user(member_id)
+            user_balance = user[4]
+            if user[5]:
+                user_balance -= training_dict['price_for_subscribe']
+            else:
+                user_balance -= training_dict['price_for_usual']
+            cursor.execute(f"UPDATE users SET balance={user_balance} WHERE user_id={member_id}")
+            db.commit()
+        cursor.execute(f"UPDATE training SET status='complete' WHERE id={training_dict['id']}")
+        db.commit()
+        cursor.close()
+        return True
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with complete training({training_dict}): {error}')
+    return False
 
 
 # OPERATIONS WITH USERS TABLE

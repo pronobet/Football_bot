@@ -213,15 +213,17 @@ def created_soon():
     return f"Данная функция в разработке\nНо скоро все будет готово !)"
 
 
+def success_cancel_training() -> str:
+    return f"Тренировка успешно отменена"
 
 
+def error_cancel_training() -> str:
+    return f"Упс...\nИз-за ошибки не удалось отменить тренировку\n\nПопробуйте еще раз"
 
 
+def success_complete_training() -> str:
+    return f"Тренировка была успешно завершена!\n\nДеньги за тренировку были успешно списаны с участников"
 
 
-def payment_history_msg(payments_list):
-    output_strig = ''
-
-    for payment in payments_list:
-        output_strig += f"Платеж от {payment[3]}\nСумма платежа: {payment[2]} RUB\nСтатус платежа: {payment_statuses[payment[1]]}\n\n"
-    return output_strig
+def error_complete_training() -> str:
+    return f"Упс...\nИз-за ошибки не удалось завершить тренировку\n\nПопробуйте еще раз"

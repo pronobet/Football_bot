@@ -110,9 +110,19 @@ def callback_worker(call: CallbackQuery) -> None:
         action = call.data
 
         if action == 'complete_training':
-            bot.send_message(user_id, created_soon())
+            training = get_future_training()
+            response = complete_training(training)
+            if response:
+                bot.send_message(user_id, success_complete_training())
+            else:
+                bot.send_message(user_id, error_complete_training())
         elif action == 'cancel_training':
-            bot.send_message(user_id, created_soon())
+            training = get_future_training()
+            response = cancel_training(training)
+            if response:
+                bot.send_message(user_id, success_cancel_training())
+            else:
+                bot.send_message(user_id, error_cancel_training())
         elif action == 'back_training':
             bot.send_message(user_id, back_from_confirm_training())
         bot.delete_message(user_id, call.message.message_id)
