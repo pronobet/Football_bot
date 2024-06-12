@@ -20,7 +20,7 @@ def start_message(message) -> str:
 
 
 def function_list(user_id) -> str:
-    output_str = (f'Сегодня: {datetime.now().date().strftime("%d.%m.%Y")}\n\n '
+    output_str = (f'Сегодня: {datetime.now().date().strftime("%d.%m.%Y")}\n\n'
                   f'Вы можете воспользоваться командами:\n'
                   f'/help — Помощь по командам бота\n'
                   f'/training_info - Информация о ближайшей тренировке\n'
@@ -31,7 +31,9 @@ def function_list(user_id) -> str:
         output_str += (f'\n\n/new_training - Создать новую тренировку\n'
                        f'/confirm_payments - Подтвердить новые платежи\n'
                        f'/confirm_training - Подтвердить завершение последней тренировки\n'
-                       f'/active_subscription - Активировать подписку для пользователя')
+                       f'/active_subscription - Активировать подписку для пользователя\n'
+                       f'/users - Получить список всех пользователей\n'
+                       f'/payments - Получить список всех платежей')
     return output_str
 
 
@@ -66,8 +68,8 @@ def new_training_was_created(new_trainig) -> str:
 
 def training_notice(new_trainig) -> str:
     return (f"Новая тренировка {new_trainig[4]} в {new_trainig[5]}\n"
-            f"Если ты с нами, воспользуйся командой /training и отправь '+' в ответ на мое сообщение.\n"
-            f"А если в этот раз не получится, то отправь '-'.")
+            f"Если ты с нами, отправь '+' в ответ на это сообщение.\n"
+            f"А если в этот раз не получится, то отправь '-'")
 
 
 def add_to_training_success() -> str:
@@ -227,3 +229,11 @@ def success_complete_training() -> str:
 
 def error_complete_training() -> str:
     return f"Упс...\nИз-за ошибки не удалось завершить тренировку\n\nПопробуйте еще раз"
+
+
+def users_list_doc() -> str:
+    return f"Список всех пользователей бота с данными из их личных кабинетов:"
+
+
+def payments_list_doc() -> str:
+    return f"Список всех платежей:"

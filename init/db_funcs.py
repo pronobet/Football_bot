@@ -1,4 +1,4 @@
-from init.class_user import training_statuses
+from init.class_user import training_statuses, payment_statuses
 from loguru import logger
 import sqlite3
 
@@ -8,7 +8,7 @@ db_name = 'bot_db.db'
 
 # USEFUL FUNCTIONS
 def training_to_dict(training) -> dict:
-    """ CONVERT TrAINING ET FROM DB TO DICT """
+    """ CONVERT TRAINING SET FROM DB TO DICT """
 
     members_list = list()
     if training[6] > 0:
@@ -28,6 +28,62 @@ def training_to_dict(training) -> dict:
     }
 
     return training_dict
+
+
+def user_to_dict(user) -> dict:
+    """ CONVERT USER SET FROM DB TO DICT """
+
+    user_dict = {
+        'id': user[0],
+        'name': user[1],
+        'second_name': user[2],
+        'username': f'@{user[3]}',
+        'balance': f'{user[4]} RUB',
+        'subscription': True if user[5] else False,
+    }
+
+    return user_dict
+
+
+def user_to_str(user_dict) -> dict:
+    """ CONVERT USER DICT TO STRING """
+
+    user_str = (
+        f"Пользователь: {user_dict['name']} {user_dict['second_name']} (#{user_dict['id']})\n"
+        f"Username: {user_dict['username']}\n"
+        f"Баланс: {user_dict['balance']}\n"
+        f"Подписка: {'Активна' if user_dict['subscription'] else 'Нет подписки'}\n\n"
+    )
+
+    return user_str
+
+
+def payment_to_dict(payment) -> dict:
+    """ CONVERT PAYMENT SET FROM DB TO DICT """
+
+    payment_dict = {
+        'user_id': payment[0],
+        'username': f'@{payment[1]}',
+        'date': f'{payment[2]}',
+        'amount': f'{payment[3]} RUB',
+        'status': payment[4],
+        'status_name': payment_statuses[payment[4]],
+    }
+
+    return payment_dict
+
+
+def payment_to_str(payment_dict) -> dict:
+    """ CONVERT PAYMENT DICT TO STRING """
+
+    payment_str = (
+        f"Платеж от {payment_dict['username']} (#{payment_dict['user_id']})\n"
+        f"Дата: {payment_dict['date']}\n"
+        f"Сумма платежа: {payment_dict['amount']}\n"
+        f"Статус платежа: {payment_dict['status_name']}\n\n"
+    )
+
+    return payment_str
 
 
 # OPERATIONS WITH PAYMENT TABLE
@@ -98,6 +154,21 @@ def update_payment_in_db(payment):
     except sqlite3.Error as error:
         logger.error(f'ERROR | Error with update payment status in DB: {error}')
     return 'error', None
+
+
+def get_payments_info():
+    """ GET INFO ABOUT ALL PAYMENTS IN DB """
+
+    try:
+        table = sqlite3.connect(db_name)
+        cursor = table.cursor()
+        cursor.execute(f"SELECT * FROM payments")
+        response = cursor.fetchall()
+        cursor.close()
+        return response
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with get payments in DB: {error}')
+    return None
 
 
 # OPERATIONS WITH TRAINING TABLE
@@ -372,3 +443,18 @@ def get_info_about_user(user_id):
     except sqlite3.Error as error:
         logger.error(f'ERROR | Error with checking user in DB: {error}')
     return False
+
+
+def get_users_info():
+    """ GET INFO ABOUT ALL USERS IN DB """
+
+    try:
+        table = sqlite3.connect(db_name)
+        cursor = table.cursor()
+        cursor.execute(f"SELECT * FROM users")
+        response = cursor.fetchall()
+        cursor.close()
+        return response
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with get users in DB: {error}')
+    return None

@@ -72,6 +72,10 @@ def start(message: Message) -> None:
         bot.register_next_step_handler(message, new_training_date)
     elif message.text == '/active_subscription' and user.user_id in admin_list:
         bot.send_message(user_chat_id, created_soon())
+    elif message.text == '/users' and user.user_id in admin_list:
+        send_users_list(user_chat_id)
+    elif message.text == '/payments' and user.user_id in admin_list:
+        send_payments_list(user_chat_id)
     else:
         bot.send_message(user_chat_id, function_list(user_chat_id))
 
@@ -130,7 +134,7 @@ def callback_worker(call: CallbackQuery) -> None:
         bot.delete_message(user_id, call.message.message_id)
 
 
-def new_training_date(message):
+def new_training_date(message: Message):
     """ START TO CREATE NEW TRAINING FROM DATE """
 
     trainig_date = message.text
@@ -148,7 +152,7 @@ def new_training_date(message):
         bot.register_next_step_handler(message, new_training_date)
 
 
-def new_training_time(message, new_trainig):
+def new_training_time(message: Message, new_trainig):
     """ CREATE NEW TRAINING FROM TIME """
 
     trainig_time = message.text
@@ -167,7 +171,7 @@ def new_training_time(message, new_trainig):
         bot.register_next_step_handler(message, new_training_time)
 
 
-def new_training_price_subscribe(message, new_trainig):
+def new_training_price_subscribe(message: Message, new_trainig):
     """ CREATE THE NEW TRAINING, ADD PRICE FOR SUBSCRIBE"""
 
     price = message.text
@@ -185,7 +189,7 @@ def new_training_price_subscribe(message, new_trainig):
         bot.register_next_step_handler(message, new_training_price_subscribe, new_trainig)
 
 
-def new_training_price(message, new_trainig):
+def new_training_price(message: Message, new_trainig):
     """ CREATE THE NEW TRAINING, ADD PRICE FOR USUAL """
 
     price = message.text
@@ -209,7 +213,7 @@ def new_training_price(message, new_trainig):
         bot.register_next_step_handler(message, new_training_price, new_trainig)
 
 
-def add_to_training(message, training):
+def add_to_training(message: Message, training):
     """ ADD USER TO TRAINING """
 
     user_voice = message.text
@@ -257,6 +261,38 @@ def confirm_payment(user_id, new_payment):
         text=payment_info_confirm(new_payment),
         reply_markup=payment_confirm_keyboard(new_payment)
     )
+
+
+def send_users_list(user_id: int):
+    """ SEND USERS LIST IN DOC """
+
+    bot.send_message(user_id, users_list_doc())
+    users_list = get_users_info()
+
+    with open('users.txt', 'w+', encoding='utf-8') as file:
+        for user_set in users_list:
+            user = user_to_dict(user_set)
+            user_str = user_to_str(user)
+            file.write(user_str)
+        file.close()
+
+    bot.send_document(user_id, open('users.txt', 'rb'))
+
+
+def send_payments_list(user_id: int):
+    """ SEND PAYMENTS LIST IN DOC """
+
+    bot.send_message(user_id, payments_list_doc())
+    payments_list = get_payments_info()
+
+    with open('payments.txt', 'w+', encoding='utf-8') as file:
+        for payment_set in payments_list:
+            payment = payment_to_dict(payment_set)
+            payment_str = payment_to_str(payment)
+            file.write(payment_str)
+        file.close()
+
+    bot.send_document(user_id, open('payments.txt', 'rb'))
 
 
 if __name__ == '__main__':
