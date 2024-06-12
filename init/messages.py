@@ -20,13 +20,15 @@ def start_message(message) -> str:
 
 
 def function_list(user_id) -> str:
-    output_str = (f'Сегодня: {datetime.now().date().strftime("%d.%m.%Y")}\n\n'
-                  f'Вы можете воспользоваться командами:\n'
-                  f'/help — Помощь по командам бота\n'
-                  f'/training_info - Информация о ближайшей тренировке\n'
-                  f'/training - Записать на тренировку\n'
-                  f'/balance - Посмотреть состояние Вашего баланса\n'
-                  f'/pay - Пополнить баланс или оплатить тренировку')
+    output_str = (
+        # f'Сегодня: {datetime.now().date().strftime("%d.%m.%Y")}\n\n'
+        f'Вы можете воспользоваться командами:\n'
+        f'/help — Помощь по командам бота\n'
+        f'/training_info - Информация о ближайшей тренировке\n'
+        f'/training - Записать на тренировку\n'
+        f'/balance - Посмотреть состояние Вашего баланса\n'
+        f'/pay - Пополнить баланс или оплатить тренировку'
+    )
     if user_id in ADMINS:
         output_str += (f'\n\n/new_training - Создать новую тренировку\n'
                        f'/confirm_payments - Подтвердить новые платежи\n'
