@@ -26,3 +26,12 @@ def payment_link_keyboard(payment_link) -> types.InlineKeyboardMarkup:
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(types.InlineKeyboardButton(text='Оплатить', url=payment_link))
     return keyboard
+
+
+def action_subscription_keyboard(user_id) -> types.InlineKeyboardMarkup:
+    """ CHOOSE ACTION FOR SUBSCRIPTION KEYBOARD """
+
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text='Активировать', callback_data=f'active_subscription-{user_id}'))
+    keyboard.add(types.InlineKeyboardButton(text='Отменить', callback_data=f'cancel_subscription-{user_id}'))
+    return keyboard

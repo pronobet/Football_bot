@@ -100,8 +100,8 @@ def no_training_info() -> str:
 
 def show_user_balance(user_info) -> str:
     output_str = f"Ваше имя: {user_info[1]} {user_info[2]}\n" if user_info[1] or user_info[2] else ''
-    output_str += f"Имя пользователя: {user_info[3]}\n" if user_info[3] else ''
-    output_str += f"В этом месяце у Вас действует абонемент" if user_info[5] else f"Ваш баланс: {user_info[4]}"
+    output_str += f"Имя пользователя: @{user_info[3]}\n" if user_info[3] else ''
+    output_str += f"В этом месяце у Вас действует абонемент" if user_info[5] else f"Ваш баланс: {user_info[4]} RUB"
     return output_str
 
 
@@ -239,3 +239,24 @@ def users_list_doc() -> str:
 
 def payments_list_doc() -> str:
     return f"Список всех платежей:"
+
+
+def input_username() -> str:
+    return f"Введите ID или username пользователя, чтобы изменить его данные о подписке:"
+
+
+def error_change_subscription() -> str:
+    return f"Упс...\nИз-за ошибки не удалось изменить статус подписки\n\nПопробуйте еще раз"
+
+
+def action_subscription(user_dict) -> str:
+    return (
+        f"Пользователь:  {user_dict['name']} {user_dict['second_name']} (#{user_dict['id']})\n"
+        f"Имя пользователя: {user_dict['username']}\n"
+        f"Баланс: {user_dict['balance']}\n"
+        f"Подписка на этот месяц: {'Активна' if user_dict['subscription'] else 'Не активна'}"
+    )
+
+
+def success_change_subscription() -> str:
+    return f"Статус подписки успешно изменен!"

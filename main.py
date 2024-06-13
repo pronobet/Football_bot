@@ -71,7 +71,8 @@ def start(message: Message) -> None:
         bot.send_message(user_chat_id, new_training_msg())
         bot.register_next_step_handler(message, new_training_date)
     elif message.text == '/active_subscription' and user.user_id in admin_list:
-        bot.send_message(user_chat_id, created_soon())
+        bot.send_message(user_chat_id, input_username())
+        bot.register_next_step_handler(message, change_subscription)
     elif message.text == '/users' and user.user_id in admin_list:
         send_users_list(user_chat_id)
     elif message.text == '/payments' and user.user_id in admin_list:
@@ -91,17 +92,17 @@ def callback_worker(call: CallbackQuery) -> None:
         new_payment_status = call.data.split(', ')
 
         if new_payment_status[0] == 'confirmed':
-            response, user_id = update_payment_in_db(new_payment_status)
+            response, player_id = update_payment_in_db(new_payment_status)
         elif new_payment_status[0] == 'rejected':
-            response, user_id = update_payment_in_db(new_payment_status)
+            response, player_id = update_payment_in_db(new_payment_status)
         else:
             bot.send_message(user_id, 'Введен неверный вариант ответа...\nВыберите вариант из предложенных выше')
-            response, user_id = 'error', None
+            response, player_id = 'error', None
 
         if response == 'confirmed':
-            bot.send_message(user_id, payment_success_confirmed(user_id))
+            bot.send_message(user_id, payment_success_confirmed(player_id))
         elif response == 'rejected':
-            bot.send_message(user_id, payment_success_rejected(user_id))
+            bot.send_message(user_id, payment_success_rejected(player_id))
         else:
             bot.send_message(user_id, payment_success_error())
 
@@ -131,6 +132,26 @@ def callback_worker(call: CallbackQuery) -> None:
                 bot.send_message(user_id, error_cancel_training())
         elif action == 'back_training':
             bot.send_message(user_id, back_from_confirm_training())
+        elif 'active_subscription' in action:
+            player_id = action.split('-')[1]
+            if player_id.isdigit():
+                player_id = int(player_id)
+                response = active_subscription(player_id)
+                if response:
+                    bot.send_message(player_id, success_change_subscription())
+                    bot.send_message(user_id, success_change_subscription())
+                else:
+                    bot.send_message(user_id, error_change_subscription())
+        elif 'cancel_subscription' in action:
+            player_id = action.split('-')[1]
+            if player_id.isdigit():
+                player_id = int(player_id)
+                response = cancel_subscription(player_id)
+                if response:
+                    bot.send_message(player_id, success_change_subscription())
+                    bot.send_message(user_id, success_change_subscription())
+                else:
+                    bot.send_message(user_id, error_change_subscription())
         bot.delete_message(user_id, call.message.message_id)
 
 
@@ -293,6 +314,35 @@ def send_payments_list(user_id: int):
         file.close()
 
     bot.send_document(user_id, open('payments.txt', 'rb'))
+
+
+def change_subscription(message: Message):
+    """ CHANGE SUBSCRIPTION STATUS OF PLAYER"""
+
+    user_text = message.text
+    user_id = message.chat.id
+
+    user, u_username, u_user_id = None, None, None
+
+    if user_text.isdigit():
+        u_user_id = int(user_text)
+    else:
+        u_username = f"{user_text}"
+
+    if u_user_id:
+        user = get_info_about_user(u_user_id)
+    elif u_username:
+        user = get_info_about_user_by_username(u_username)
+    else:
+        bot.send_message(user_id, error_change_subscription())
+
+    if user:
+        user_dict = user_to_dict(user)
+        bot.send_message(
+            user_id,
+            text=action_subscription(user_dict),
+            reply_markup=action_subscription_keyboard(user_dict['id'])
+        )
 
 
 if __name__ == '__main__':

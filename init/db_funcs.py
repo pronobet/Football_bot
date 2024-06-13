@@ -19,8 +19,8 @@ def training_to_dict(training) -> dict:
         'id': training[0],
         'status': training[1],
         'status_name': training_statuses[training[1]],
-        'price_for_usual': training[2],
-        'price_for_subscribe': training[3],
+        'price_for_subscribe': training[2],
+        'price_for_usual': training[3],
         'date': training[4],
         'time': training[5],
         'members_count': training[6],
@@ -445,6 +445,24 @@ def get_info_about_user(user_id):
     return False
 
 
+def get_info_about_user_by_username(username):
+    """ GET INFO ABOUT USER IN DB """
+
+    create_user_table()
+
+    try:
+        table = sqlite3.connect(db_name)
+        cursor = table.cursor()
+        cursor.execute(f"SELECT * FROM users WHERE username='{username}'")
+        response = cursor.fetchall()
+        cursor.close()
+        if response and response[0]:
+            return response[0]
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with checking user in DB: {error}')
+    return False
+
+
 def get_users_info():
     """ GET INFO ABOUT ALL USERS IN DB """
 
@@ -458,3 +476,33 @@ def get_users_info():
     except sqlite3.Error as error:
         logger.error(f'ERROR | Error with get users in DB: {error}')
     return None
+
+
+def active_subscription(user_id):
+    """ ACTIVE SUBSCRIPTION FOR USER """
+
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+        cursor.execute(f"UPDATE users SET subscription = ? WHERE user_id = ?", (True, user_id))
+        db.commit()
+        cursor.close()
+        return True
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with active subscription for user in DB: {error}')
+    return False
+
+
+def cancel_subscription(user_id):
+    """ CANCEL SUBSCRIPTION FOR USER """
+
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+        cursor.execute(f"UPDATE users SET subscription = ? WHERE user_id = ?", (False, user_id))
+        db.commit()
+        cursor.close()
+        return True
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with cancel subscription for user in DB: {error}')
+    return False
