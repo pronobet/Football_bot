@@ -45,14 +45,14 @@ The received tokens should be located in the ".env" file:
 python -m venv venv  
 ```  
   
-2. Installing requirements:  
+2. Virtual environment activation on Windows:
 ```  
-pip install -r requirements.txt  
+cd venv\Scripts\activate 
 ```  
   
-3. Virtual environment activation on Windows:  
+3. Installing requirements:  
 ```  
-cd venv\Scripts\activate  
+pip install -r requirements.txt   
 ```  
   
 4. Starting bot:  
