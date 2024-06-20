@@ -9,9 +9,9 @@ from loguru import logger
 import telebot
 
 
+admin_list = [int(config('admin_1')), int(config('admin_1'))]
 bot = telebot.TeleBot(config('football_bot'))
 payment_link = config('payment_link')
-admin_list = [2010916504, 664588645]
 users_dict = dict()
 
 
@@ -168,9 +168,9 @@ def new_training_date(message: Message):
         bot.send_message(user_id, new_training_time_msg())
         bot.register_next_step_handler(message, new_training_time, new_trainig)
     except Exception as error:
-        logger.error(f"Wrong input trainig date = {trainig_date} by {user}. Error: {error}")
+        # logger.error(f"Wrong input trainig date = {trainig_date} by {user}. Error: {error}")
         bot.send_message(user_id, 'Введена неверная дата тренировки...\nПопробуйте снова')
-        bot.register_next_step_handler(message, new_training_date)
+        # bot.register_next_step_handler(message, new_training_date)
 
 
 def new_training_time(message: Message, new_trainig):
@@ -253,7 +253,7 @@ def add_to_training(message: Message, training):
         bot.send_message(user_id, bad_voice_to_trainig())
     else:
         bot.send_message(user_id, 'Введен неверный вариант ответа...\nПопробуйте снова')
-        bot.register_next_step_handler(message, add_to_training, training)
+        # bot.register_next_step_handler(message, add_to_training, training)
 
 
 def enter_amount(message: Message) -> None:
@@ -271,7 +271,7 @@ def enter_amount(message: Message) -> None:
     except Exception as error:
         logger.error(f"Wrong input pay amount = {pay_amount} by {user}. Error: {error}")
         bot.send_message(user_id, 'Введено неверная сумма перевода...\nПопробуйте снова')
-        bot.register_next_step_handler(message, enter_amount)
+        # bot.register_next_step_handler(message, enter_amount)
 
 
 def confirm_payment(user_id, new_payment):
