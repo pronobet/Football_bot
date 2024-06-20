@@ -9,7 +9,7 @@ from loguru import logger
 import telebot
 
 
-admin_list = [int(config('admin_1')), int(config('admin_1'))]
+admin_list = [int(config('admin_1')), int(config('admin_2'))]
 bot = telebot.TeleBot(config('football_bot'))
 payment_link = config('payment_link')
 users_dict = dict()
