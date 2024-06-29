@@ -348,6 +348,74 @@ def complete_training(training):
     return False
 
 
+def change_date(training, new_date):
+    """ CHANGE TRAINING DATE IN DB"""
+
+    training_dict = training_to_dict(training)
+
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+        cursor.execute(f"UPDATE training SET date='{new_date}' WHERE id={training_dict['id']}")
+        db.commit()
+        cursor.close()
+        return True
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with change date in training({training_dict}): {error}')
+    return False
+
+
+def change_sub_price(training, new_price):
+    """ CHANGE TRAINING SUB PRICE IN DB"""
+
+    training_dict = training_to_dict(training)
+
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+        cursor.execute(f"UPDATE training SET price_for_subscribe={new_price} WHERE id={training_dict['id']}")
+        db.commit()
+        cursor.close()
+        return True
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with change subscription price in training({training_dict}): {error}')
+    return False
+
+
+def change_usual_price(training, new_price):
+    """ CHANGE TRAINING SUB PRICE IN DB"""
+
+    training_dict = training_to_dict(training)
+
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+        cursor.execute(f"UPDATE training SET price_for_usual={new_price} WHERE id={training_dict['id']}")
+        db.commit()
+        cursor.close()
+        return True
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with change subscription price in training({training_dict}): {error}')
+    return False
+
+
+def change_time(training, new_time):
+    """ CHANGE TRAINING DATE IN DB"""
+
+    training_dict = training_to_dict(training)
+
+    try:
+        db = sqlite3.connect(db_name)
+        cursor = db.cursor()
+        cursor.execute(f"UPDATE training SET time='{new_time}' WHERE id={training_dict['id']}")
+        db.commit()
+        cursor.close()
+        return True
+    except sqlite3.Error as error:
+        logger.error(f'ERROR | Error with change usual price in training({training_dict}): {error}')
+    return False
+
+
 # OPERATIONS WITH USERS TABLE
 def create_user_table():
     """ CREATE DB for BOT """

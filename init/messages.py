@@ -33,6 +33,7 @@ def function_list(user_id) -> str:
         output_str += (f'\n\n/new_training - Создать новую тренировку\n'
                        f'/confirm_payments - Подтвердить новые платежи\n'
                        f'/confirm_training - Подтвердить завершение последней тренировки\n'
+                       f'/change_training - Изменить параметры предстоящей тренировки\n'
                        f'/active_subscription - Активировать подписку для пользователя\n'
                        f'/users - Получить список всех пользователей\n'
                        f'/payments - Получить список всех платежей')
@@ -105,7 +106,7 @@ def show_user_balance(user_info) -> str:
     return output_str
 
 
-def training_info(training_info, users_list):
+def training_info(training_info, users_list) -> str:
     output_str = (
         f"Ближайшая тренирока {training_info[4]} в {training_info[5]}\n"
         f"Количество участников на данный момент: {training_info[6]}\n\n"
@@ -260,3 +261,55 @@ def action_subscription(user_dict) -> str:
 
 def success_change_subscription() -> str:
     return f"Статус подписки успешно изменен!"
+
+
+def change_training_msg(training_info, users_list) -> str:
+    output_str = (
+        f"Ближайшая тренирока\nДата: {training_info[4]}\nВремя: {training_info[5]}\n"
+        f"Цена с подпиской: {training_info[2]} RUB\nЦена без подписки: {training_info[3]} RUB\n\n"
+        f"Количество участников на данный момент: {training_info[6]}\n"
+    )
+
+    if training_info[6] > 0:
+        output_str += "Список участников:\n"
+        for user in users_list:
+            output_str += f"{user}\n"
+
+    output_str += f"\nВыберите какой параметр Вы хотите изменить:"
+    return output_str
+
+
+def change_training_date_msg() -> str:
+    return f"Введите новую дату тренировки\nПример: 01.01.2024"
+
+
+def change_training_time_msg() -> str:
+    return f"Введите новое время начала тренировки:\nПример: 20.00"
+
+
+def change_training_sub_price_msg() -> str:
+    return f"Введите стоимость тренировки с подпиской:\nПример: 750"
+
+
+def change_training_usual_price_msg() -> str:
+    return f"Введите стоимость тренировки без подписки:\nПример: 1000"
+
+
+def date_was_changed() -> str:
+    return f"Дата тренировки была успешно изменена"
+
+
+def time_was_changed() -> str:
+    return f"Время тренировки было успешно изменено"
+
+
+def sub_price_was_changed() -> str:
+    return f"Цена с подпиской была успешно изменена"
+
+
+def usual_price_was_changed() -> str:
+    return f"Цена без подписки была успешно изменена"
+
+
+def error_change_training() -> str:
+    return f"Что-то пошло не так...\nПопробуйте позже или обратитесь к разработчику"

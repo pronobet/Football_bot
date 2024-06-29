@@ -35,3 +35,15 @@ def action_subscription_keyboard(user_id) -> types.InlineKeyboardMarkup:
     keyboard.add(types.InlineKeyboardButton(text='Активировать', callback_data=f'active_subscription-{user_id}'))
     keyboard.add(types.InlineKeyboardButton(text='Отменить', callback_data=f'cancel_subscription-{user_id}'))
     return keyboard
+
+
+def change_training_keyboard() -> types.InlineKeyboardMarkup:
+    """ CHOOSE ACTION FOR SUBSCRIPTION KEYBOARD """
+
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text='Время', callback_data=f'time'))
+    keyboard.add(types.InlineKeyboardButton(text='Дата', callback_data=f'date'))
+    keyboard.add(types.InlineKeyboardButton(text='Цена с подпиской', callback_data=f'prive_with_subscription'))
+    keyboard.add(types.InlineKeyboardButton(text='Цена без подписки', callback_data=f'prive_without_subscription'))
+    keyboard.add(types.InlineKeyboardButton(text='< Назад', callback_data=f'back_training'))
+    return keyboard

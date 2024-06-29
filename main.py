@@ -67,6 +67,14 @@ def start(message: Message) -> None:
             bot.send_message(user_chat_id, text=confirm_training(training, users_list), reply_markup=training_confirm_keyboard())
         else:
             bot.send_message(user_chat_id, no_confirm_training_msg())
+    elif message.text == '/change_training' and user.user_id in admin_list:
+        training = get_future_training()
+
+        if training:
+            users_list = get_users_on_training(training[7])
+            bot.send_message(user_chat_id, text=change_training_msg(training, users_list), reply_markup=change_training_keyboard())
+        else:
+            bot.send_message(user_chat_id, no_training_info())
     elif message.text == '/new_training' and user.user_id in admin_list:
         bot.send_message(user_chat_id, new_training_msg())
         bot.register_next_step_handler(message, new_training_date)
@@ -152,6 +160,18 @@ def callback_worker(call: CallbackQuery) -> None:
                     bot.send_message(user_id, success_change_subscription())
                 else:
                     bot.send_message(user_id, error_change_subscription())
+        elif action == 'time':
+            bot.send_message(user_id, change_training_time_msg())
+            bot.register_next_step_handler(call.message, change_training_time)
+        elif action == 'date':
+            bot.send_message(user_id, change_training_date_msg())
+            bot.register_next_step_handler(call.message, change_training_date)
+        elif action == 'prive_with_subscription':
+            bot.send_message(user_id, change_training_sub_price_msg())
+            bot.register_next_step_handler(call.message, change_training_sub_price)
+        elif action == 'prive_without_subscription':
+            bot.send_message(user_id, change_training_usual_price_msg())
+            bot.register_next_step_handler(call.message, change_training_usual_price)
         bot.delete_message(user_id, call.message.message_id)
 
 
@@ -343,6 +363,85 @@ def change_subscription(message: Message):
             text=action_subscription(user_dict),
             reply_markup=action_subscription_keyboard(user_dict['id'])
         )
+
+
+def change_training_date(message: Message):
+    """ CHANGE TRAINING DATE """
+
+    trainig_date = message.text
+    user_id = message.chat.id
+    user = users_dict[user_id]
+
+    try:
+        training = get_future_training()
+        new_date = datetime.strptime(trainig_date, "%d.%m.%Y").date()
+        response = change_date(training, trainig_date)
+        if response:
+            bot.send_message(user_id, date_was_changed())
+        else:
+            bot.send_message(user_id, error_change_training())
+    except Exception as error:
+        bot.send_message(user_id, 'Введена неверная дата тренировки...\nПопробуйте снова')
+
+
+def change_training_time(message: Message):
+    """ CHANGE TRAINING TIME """
+
+    trainig_time = message.text
+    user_id = message.chat.id
+    user = users_dict[user_id]
+
+    try:
+        time = trainig_time.split('.')
+        if len(time) == 2 and time[0].isdigit() and time[1].isdigit():
+            training = get_future_training()
+            response = change_time(training, trainig_time)
+            if response:
+                bot.send_message(user_id, time_was_changed())
+            else:
+                bot.send_message(user_id, error_change_training())
+        else:
+            bot.send_message(user_id, 'Введена неверная дата тренировки...\nПопробуйте снова')
+    except Exception as error:
+        bot.send_message(user_id, 'Введена неверная дата тренировки...\nПопробуйте снова')
+
+
+def change_training_sub_price(message: Message):
+    """ CHANGE TRAINING PRICE WITH SUBSCRIPTION """
+
+    sub_price = message.text
+    user_id = message.chat.id
+    user = users_dict[user_id]
+
+    try:
+        price_for_subscribe = float(sub_price)
+        training = get_future_training()
+        response = change_sub_price(training, price_for_subscribe)
+        if response:
+            bot.send_message(user_id, sub_price_was_changed())
+        else:
+            bot.send_message(user_id, error_change_training())
+    except Exception as error:
+        bot.send_message(user_id, 'Введена неверная сумма...\nПопробуйте снова')
+
+
+def change_training_usual_price(message: Message):
+    """ CHANGE TRAINING PRICE WITHOUT SUBSCRIPTION """
+
+    price = message.text
+    user_id = message.chat.id
+    user = users_dict[user_id]
+
+    try:
+        usual_price = float(price)
+        training = get_future_training()
+        response = change_usual_price(training, usual_price)
+        if response:
+            bot.send_message(user_id, usual_price_was_changed())
+        else:
+            bot.send_message(user_id, error_change_training())
+    except Exception as error:
+        bot.send_message(user_id, 'Введена неверная сумма...\nПопробуйте снова')
 
 
 if __name__ == '__main__':
