@@ -1,78 +1,70 @@
 import os
 import logging
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import openai
 
-# Logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+# Configuration du logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
-# Récupération des tokens
+# Clé OpenAI
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Token Telegram
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-if not TELEGRAM_TOKEN or not OPENAI_API_KEY:
-    raise Exception("Erreur : TELEGRAM_TOKEN ou OPENAI_API_KEY non définis dans les variables d'environnement.")
-
-openai.api_key = OPENAI_API_KEY
-
-# Liste des championnats et compétitions ciblées (exemple)
-TARGET_COMPETITIONS = [
-    "Premier League",
-    "Ligue 1",
-    "La Liga",
-    "Bundesliga",
-    "Serie A",
-    "Champions League",
-    "Europa League",
-    "Coupe du Monde",
-    "Euro"
+# Exemple de matchs du jour (à remplacer par une vraie API)
+MATCHES = [
+    {"home": "PSG", "away": "Marseille", "date": "2025-05-24"},
+    {"home": "Manchester United", "away": "Liverpool", "date": "2025-05-24"},
 ]
 
-def start(update: Update, context: CallbackContext):
-    msg = ("Salut ! Je suis ton bot de pronostics football.\n"
-           "Envoie /pronostic pour recevoir le pronostic du jour sur les grands championnats et compétitions.")
-    update.message.reply_text(msg)
-
-def generate_pronostic():
-    """
-    Fonction qui appelle OpenAI pour générer un pronostic.
-    Tu peux améliorer le prompt pour plus de précision.
-    """
-    prompt = (
-        "Tu es un expert en football. Donne un pronostic pour les matchs du jour "
-        "dans les championnats suivants : " + ", ".join(TARGET_COMPETITIONS) + ". "
-        "Donne le résultat le plus probable avec un court argument."
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Bienvenue sur le bot pronostics foot ! Tape /pronostic pour recevoir un pronostic."
     )
+
+async def pronostic(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Je prépare le pronostic du jour, un instant ...")
+
+    # Pour cet exemple, on prend juste le premier match du jour
+    match = MATCHES[0]
+    match_str = f"{match['home']} vs {match['away']}"
+
+    prompt = (
+        f"Tu es un expert en football. Donne-moi un pronostic précis et concis pour le match "
+        f"{match_str} qui aura lieu aujourd'hui. Propose le score et une explication courte."
+    )
+
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=100,
-            temperature=0.7
+            temperature=0.7,
         )
-        pronostic = response.choices[0].text.strip()
-        return pronostic
+        pronostic_text = response['choices'][0]['message']['content']
+        await update.message.reply_text(pronostic_text)
     except Exception as e:
         logger.error(f"Erreur OpenAI: {e}")
-        return "Désolé, je n'ai pas pu récupérer le pronostic pour le moment."
+        await update.message.reply_text(
+            "Désolé, je n'ai pas pu récupérer le pronostic pour le moment."
+        )
 
-def pronostic(update: Update, context: CallbackContext):
-    update.message.reply_text("Je prépare le pronostic du jour, un instant ...")
-    pronostic_text = generate_pronostic()
-    update.message.reply_text(pronostic_text)
 
 def main():
-    updater = Updater(TELEGRAM_TOKEN, use_context=True)
-    dp = updater.dispatcher
+    app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("pronostic", pronostic))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("pronostic", pronostic))
 
-    updater.start_polling()
-    logger.info("Bot démarré")
-    updater.idle()
+    print("Bot démarré...")
+    app.run_polling()
+
 
 if __name__ == "__main__":
     main()
